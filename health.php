@@ -1,0 +1,604 @@
+<?php
+session_start();
+
+// Check if user is logged in
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Available Healthcares</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f4f4;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 40px;
+      background-color: beige;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      font-size: 50px;
+      font-weight: bold;
+      color: #2e7d32;
+    }
+
+    .logo img {
+      margin-right: 10px;
+    }
+
+    .logo .highlight {
+      color: #43a047;
+    }
+
+    .cart-icon {
+      position: relative;
+      margin-left: 20px;
+      font-size: 24px;
+    }
+
+    .cart-icon a {
+      color: #2e7d32;
+      text-decoration: none;
+      position: relative;
+    }
+
+    #cart-count {
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      background: red;
+      color: white;
+      font-size: 12px;
+      padding: 2px 6px;
+      border-radius: 50%;
+    }
+
+    :root {
+      --pink: #2e7d32;
+    }
+
+    .equiments .box-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      padding: 2rem;
+    }
+
+    .equiments .box-container .box {
+      flex: 1 1 30rem;
+      box-shadow: 0.5rem 1.5rem rgba(0, 0, 0, .1);
+      border-radius: .5rem;
+      border: 1rem solid rgba(0, 0, 0, .1);
+      position: relative;
+      background: #fff;
+      margin-bottom: 2rem;
+    }
+
+    .equiments .box-container .box .discount {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      padding: 0.5rem 1rem;
+      font-size: 2rem;
+      color: var(--pink);
+      background: rgba(255, 51, 153, .05);
+      z-index: 1;
+      border-radius: .5rem;
+    }
+
+    .equiments .box-container .box .image {
+      position: relative;
+      text-align: center;
+      padding-top: 2rem;
+      overflow: hidden;
+    }
+
+    .equiments .box-container .box .image img {
+      height: 25rem;
+      transition: transform 0.3s;
+    }
+
+    .equiments .box-container .box:hover .image img {
+      transform: scale(1.1);
+    }
+
+    .equiments .box-container .box .image .icons {
+      position: absolute;
+      bottom: 7rem;
+      left: 0;
+      right: 0;
+      display: flex;
+      transition: bottom 0.3s;
+    }
+
+    .equiments .box-container .box:hover .image .icons {
+      bottom: 0;
+    }
+
+    .equiments .box-container .box .image .icons a {
+      height: 5rem;
+      line-height: 5rem;
+      font-size: 2rem;
+      width: 50%;
+      background: var(--pink);
+      color: #fff;
+      text-align: center;
+      text-decoration: none;
+      transition: background 0.3s;
+    }
+
+    .equiments .box-container .box .image .icons .cart-btn {
+      border-left: .1rem solid #fff7;
+      border-right: .1rem solid #fff7;
+      width: 100%;
+    }
+
+    .equiments .box-container .box .image .icons a:hover {
+      background: #333;
+    }
+
+    .equiments .box-container .box .content {
+      padding: 2rem;
+      text-align: center;
+    }
+
+    .equiments .box-container .box .content .price {
+      font-size: 2.5rem;
+      color: var(--pink);
+      font-weight: bolder;
+      padding-top: 1rem;
+    }
+
+    .equiments .box-container .box .content .price span {
+      font-size: 1.5rem;
+      color: #999;
+      font-weight: lighter;
+      text-decoration: line-through;
+      margin-left: 1rem;
+    }
+
+    .equiments .box-container .box .content .med-name {
+      font-size: 1.8rem;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+
+    .heading {
+      text-align: center;
+      font-size: 3rem;
+      margin: 2rem 0;
+    }
+
+    .heading span {
+      color: var(--pink);
+    }
+
+    /* Cart sidebar */
+    .cart-sidebar {
+      position: fixed;
+      top: 0;
+      right: -400px;
+      width: 400px;
+      height: 100vh;
+      background: white;
+      box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+      transition: right 0.3s ease;
+      z-index: 1500;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .cart-sidebar.active {
+      right: 0;
+    }
+
+    .cart-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .cart-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #666;
+    }
+
+    .cart-items {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+    }
+
+    .cart-item {
+      display: flex;
+      gap: 1rem;
+      padding: 1rem 0;
+      border-bottom: 1px solid #f3f4f6;
+    }
+
+    .cart-item img {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 5px;
+    }
+
+    .cart-item-details {
+      flex: 1;
+    }
+
+    .cart-item-title {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .cart-item-price {
+      color: #2563eb;
+      font-weight: 600;
+    }
+
+    .cart-item-quantity {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .quantity-btn {
+      background: #f3f4f6;
+      border: none;
+      width: 25px;
+      height: 25px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .cart-footer {
+      padding: 1.5rem;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .cart-total {
+      display: flex;
+      justify-content: space-between;
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    .checkout-btn {
+      width: 100%;
+      padding: 1rem;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .checkout-btn:hover {
+      background: #1d4ed8;
+    }
+     header .search{
+      width: 300px;
+    padding: 0.5rem;
+    border-radius: 5px;
+    border: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Cart Sidebar -->
+  <div class="cart-sidebar" id="cartSidebar">
+    <div class="cart-header">
+      <h3>Shopping Cart</h3>
+      <button class="cart-close" id="cartClose"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="cart-items" id="cartItems"></div>
+    <div class="cart-footer">
+      <div class="cart-total">
+        <span>Total:</span>
+        <span id="cartTotal">Rs 0.00</span>
+      </div>
+      <button class="checkout-btn">Proceed to Checkout</button>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header>
+    <div class="logo">
+      <img src="https://img.icons8.com/color/48/000000/pills.png" alt="Logo" />
+      <span>Care<span class="highlight">Basket</span></span>
+    </div>
+    <div class="search">
+    <input type="text" name="" id="searchBar" placeholder="Search healthcare devices" >
+    </div>
+    <div class="cart-icon">
+      <a href="#" id="cartIcon">
+        <i class="fas fa-shopping-cart"></i>
+        <span id="cart-count">0</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Product Section -->
+  <section class="equiments" id="Equiments">
+    <h1 class="heading">Available <span>Healthcare Devices</span></h1>
+    <div class="box-container">
+      <!-- Sample product box -->
+      <div class="box" data-id="1" data-name="Thermometer" data-price="140" data-image="https://static-01.daraz.com.np/p/bd177351e730ab39812dd4300a3ac30f.jpg">
+        <span class="discount">-5%</span>
+        <div class="image">
+          <img src="https://static-01.daraz.com.np/p/bd177351e730ab39812dd4300a3ac30f.jpg" alt="Thermometer">
+          <div class="icons">
+            <a href="#"><i class="fas fa-heart"></i></a>
+            <a href="#" class="cart-btn"><i class="fas fa-shopping-cart"></i> Add to cart</a>
+            <a href="#"><i class="fas fa-share"></i></a>
+          </div>
+        </div>
+        <div class="content">
+          <div class="med-name">Thermometer</div>
+          <div class="price">Rs 140 <span>Rs 150</span></div>
+        </div>
+      </div>
+
+       <div class="box" data-id="2" data-name="BP-Machine-Sphygmomanometer" data-price="1932" data-image="https://www.epharmacy.com.np/content/images/thumbs/5f521c98d4ff1000010c36c3_bp-machine-sphygmomanometer_415.jpeg">
+            <span class="discount">-8%</span>
+            <div class="image">
+                <img src="https://www.epharmacy.com.np/content/images/thumbs/5f521c98d4ff1000010c36c3_bp-machine-sphygmomanometer_415.jpeg" alt="BP Machine">
+                <div class="icons">
+                    <a href="#" title="Add to Wishlist"><i class="fas fa-heart"></i></a>
+                    <a href="#" class="cart-btn" title="Add to Cart"><i class="fas fa-shopping-cart"></i> Add to cart</a>
+                    <a href="#" title="Share"><i class="fas fa-share"></i></a>
+                </div>
+            </div>
+            <div class="content">
+                <div class="med-name">BP-Machine-Sphygmomanometer</div>
+                <div class="price">Rs 1932 <span>Rs 2100</span></div>
+            </div>
+        </div>
+
+       <div class="box" data-id="3" data-name="Glucometer" data-price="1000" data-image="https://static-01.daraz.com.np/p/484fed9493eae86efa646119a9b09cbb.jpg">
+    <span class="discount">-5%</span>
+    <div class="image">
+        <img src="https://static-01.daraz.com.np/p/484fed9493eae86efa646119a9b09cbb.jpg" alt="Glucometer">
+        <div class="icons">
+            <a href="#"><i class="fas fa-heart"></i></a>
+            <a href="#" class="cart-btn"><i class="fas fa-shopping-cart"></i> Add to cart</a>
+            <a href="#"><i class="fas fa-share"></i></a>
+        </div>
+    </div>
+    <div class="content">
+        <div class="med-name">Glucometer</div>
+        <div class="price">Rs 1000 <span>Rs 1055</span></div>
+    </div>
+</div>
+
+<div class="box" data-id="4" data-name="Sugar Strips" data-price="1045" data-image="https://static-01.daraz.com.np/p/5f6eb16891cf78a5adcfe5d8f1662fa3.jpg">
+    <span class="discount">-10%</span>
+    <div class="image">
+        <img src="https://static-01.daraz.com.np/p/5f6eb16891cf78a5adcfe5d8f1662fa3.jpg" alt="Sugar Strips">
+        <div class="icons">
+            <a href="#"><i class="fas fa-heart"></i></a>
+            <a href="#" class="cart-btn"><i class="fas fa-shopping-cart"></i> Add to cart</a>
+            <a href="#"><i class="fas fa-share"></i></a>
+        </div>
+    </div>
+    <div class="content">
+        <div class="med-name">Sugar Strips</div>
+        <div class="price">Rs 1045 <span>Rs 1100</span></div>
+    </div>
+</div>
+
+<div class="box" data-id="5" data-name="Pulse Oximeter" data-price="2550" data-image="https://static-01.daraz.com.np/p/52a04515060828eba5d08bf78ba37813.jpg">
+    <span class="discount">-15%</span>
+    <div class="image">
+        <img src="https://static-01.daraz.com.np/p/52a04515060828eba5d08bf78ba37813.jpg" alt="Pulse Oximeter">
+        <div class="icons">
+            <a href="#"><i class="fas fa-heart"></i></a>
+            <a href="#" class="cart-btn"><i class="fas fa-shopping-cart"></i> Add to cart</a>
+            <a href="#"><i class="fas fa-share"></i></a>
+        </div>
+    </div>
+    <div class="content">
+        <div class="med-name">Pulse Oximeter</div>
+        <div class="price">Rs 2550 <span>Rs 3000</span></div>
+    </div>
+</div>
+
+<div class="box" data-id="6" data-name="Pregnancy Kit(4 kits)" data-price="361" data-image="https://cdn01.pharmeasy.in/dam/products_otc/D06967/prega-news-at-home-one-step-urine-hcg-pregnancy-test-kit-4-tests-6.3-1728543502.jpg">
+    <span class="discount">-5%</span>
+    <div class="image">
+        <img src="https://cdn01.pharmeasy.in/dam/products_otc/D06967/prega-news-at-home-one-step-urine-hcg-pregnancy-test-kit-4-tests-6.3-1728543502.jpg" alt="Pregnancy">
+        <div class="icons">
+            <a href="#"><i class="fas fa-heart"></i></a>
+            <a href="#" class="cart-btn"><i class="fas fa-shopping-cart"></i> Add to cart</a>
+            <a href="#"><i class="fas fa-share"></i></a>
+        </div>
+    </div>
+    <div class="content">
+        <div class="med-name">Pregnancy Kit(4 kits)</div>
+        <div class="price">Rs 361 <span>Rs 380</span></div>
+    </div>
+</div>
+
+<div class="box" data-id="7" data-name="Medical Gloves" data-price="845" data-image="https://static-01.daraz.com.np/p/c5db4ccb27c32cd376f20af3d9e6567a.jpg">
+    <span class="discount">-5%</span>
+    <div class="image">
+        <img src="https://static-01.daraz.com.np/p/c5db4ccb27c32cd376f20af3d9e6567a.jpg" alt="Medical Gloves">
+        <div class="icons">
+            <a href="#"><i class="fas fa-heart"></i></a>
+            <a href="#" class="cart-btn"><i class="fas fa-shopping-cart"></i> Add to cart</a>
+            <a href="#"><i class="fas fa-share"></i></a>
+        </div>
+    </div>
+    <div class="content">
+        <div class="med-name">Medical Gloves</div>
+        <div class="price">Rs 845 <span>Rs 890</span></div>
+    </div>
+</div>
+
+<div class="box" data-id="8" data-name="Surgical Masks" data-price="250" data-image="https://m.media-amazon.com/images/I/71F4aycdIaL.jpg">
+    <span class="discount">-5%</span>
+    <div class="image">
+        <img src="https://m.media-amazon.com/images/I/71F4aycdIaL.jpg" alt="Surgical Masks">
+        <div class="icons">
+            <a href="#"><i class="fas fa-heart"></i></a>
+            <a href="#" class="cart-btn"><i class="fas fa-shopping-cart"></i> Add to cart</a>
+            <a href="#"><i class="fas fa-share"></i></a>
+        </div>
+    </div>
+    <div class="content">
+        <div class="med-name">Surgical Masks</div>
+        <div class="price">Rs 250 <span>Rs 270</span></div>
+    </div>
+</div>
+
+<div class="box" data-id="9" data-name="Yoga Mat" data-price=" 1081 " data-image="https://static-01.daraz.com.np/p/c217a6b15ccb3fac238197f89c98f677.jpg">
+            <span class="discount">-6%</span>
+            <div class="image">
+                <img src="https://static-01.daraz.com.np/p/c217a6b15ccb3fac238197f89c98f677.jpg" alt="Yoga mat">
+                <div class="icons">
+                    <a href="#" title="Add to Wishlist"><i class="fas fa-heart"></i></a>
+                    <a href="#" class="cart-btn" title="Add to Cart"><i class="fas fa-shopping-cart"></i> Add to cart</a>
+                    <a href="#" title="Share"><i class="fas fa-share"></i></a>
+                </div>
+            </div>
+            <div class="content">
+                <div class="med-name">Yoga Mat</div>
+                <div class="price">Rs 1081 <span>Rs 1150</span></div>
+            </div>
+        </div>
+
+<div class="box"  data-id="10" data-name="Hot Water Bag" data-price=" 285" data-image="https://static-01.daraz.com.np/p/b9aacb973cfafdc4a873f14ccf786126.jpg">
+            <span class="discount">-5%</span>
+            <div class="image">
+                <img src="https://static-01.daraz.com.np/p/b9aacb973cfafdc4a873f14ccf786126.jpg" alt="Hot Water Bag">
+                <div class="icons">
+                    <a href="#" title="Add to Wishlist"><i class="fas fa-heart"></i></a>
+                    <a href="#" class="cart-btn" title="Add to Cart"><i class="fas fa-shopping-cart"></i> Add to cart</a>
+                    <a href="#" title="Share"><i class="fas fa-share"></i></a>
+                </div>
+            </div>
+            <div class="content">
+                <div class="med-name">Hot Water Bag</div>
+                <div class="price">Rs 285 <span>Rs 300</span></div>
+            </div>
+        </div>
+
+        <div class="box" data-id="11" data-name="Weighing Machine" data-price="950" data-image="https://static-01.daraz.com.np/p/c8ace5bd5d891a524a929e0ed21fdb27.jpg">
+            <span class="discount">-5%</span>
+            <div class="image">
+                <img src="https://static-01.daraz.com.np/p/c8ace5bd5d891a524a929e0ed21fdb27.jpg" alt="Weighing Machine">
+                <div class="icons">
+                    <a href="#" title="Add to Wishlist"><i class="fas fa-heart"></i></a>
+                    <a href="#" class="cart-btn" title="Add to Cart"><i class="fas fa-shopping-cart"></i> Add to cart</a>
+                    <a href="#" title="Share"><i class="fas fa-share"></i></a>
+                </div>
+            </div>
+            <div class="content">
+                <div class="med-name">Weighing Machine</div>
+                <div class="price">Rs 950 <span>Rs 1000</span></div>
+            </div>
+        </div>
+
+        <div class="box" data-id="12" data-name="Position Corrector Belt" data-price=" 1650 " data-image="ttps://static-01.daraz.com.np/p/682dc2b2b73ebe6e9df04e1165bd06c4.jpg">
+            <span class="discount">-10%</span>
+            <div class="image">
+                <img src="https://static-01.daraz.com.np/p/682dc2b2b73ebe6e9df04e1165bd06c4.jpg" alt="Position Corrector belt">
+                <div class="icons">
+                    <a href="#" title="Add to Wishlist"><i class="fas fa-heart"></i></a>
+                    <a href="#" class="cart-btn" title="Add to Cart"><i class="fas fa-shopping-cart"></i> Add to cart</a>
+                    <a href="#" title="Share"><i class="fas fa-share"></i></a>
+                </div>
+            </div>
+            <div class="content">
+                <div class="med-name">Position Corrector Belt</div>
+                <div class="price">Rs 1650 <span>Rs 1800</span></div>
+            </div>
+        </div>
+
+        <div class="box" data-id="13" data-name="Arm Sling pouch" data-price="766" data-image="https://m.media-amazon.com/images/I/612Mp1PHcwL.jpg">
+            <span class="discount">-20%</span>
+            <div class="image">
+                <img src="https://m.media-amazon.com/images/I/612Mp1PHcwL.jpg" alt="Arm Sling Pouch">
+                <div class="icons">
+                    <a href="#" title="Add to Wishlist"><i class="fas fa-heart"></i></a>
+                    <a href="#" class="cart-btn" title="Add to Cart"><i class="fas fa-shopping-cart"></i> Add to cart</a>
+                    <a href="#" title="Share"><i class="fas fa-share"></i></a>
+                </div>
+            </div>
+            <div class="content">
+                <div class="med-name">Arm Sling pouch</div>
+                <div class="price">Rs 766 <span>Rs 958</span></div>
+            </div>
+        </div>
+
+        <div class="box" data-id="14" data-name="Wrist Splint" data-price=" 553" data-image="https://onemg.gumlet.io/l_watermark_346,w_480,h_480/a_ignore,w_480,h_480,c_fit,q_auto,f_auto/182df29d79c942b79b0f780fb18424f4.jpg">
+            <span class="discount">-18%</span>
+            <div class="image">
+                <img src="https://onemg.gumlet.io/l_watermark_346,w_480,h_480/a_ignore,w_480,h_480,c_fit,q_auto,f_auto/182df29d79c942b79b0f780fb18424f4.jpg" alt="Wrist Splint">
+                <div class="icons">
+                    <a href="#" title="Add to Wishlist"><i class="fas fa-heart"></i></a>
+                    <a href="#" class="cart-btn" title="Add to Cart"><i class="fas fa-shopping-cart"></i> Add to cart</a>
+                    <a href="#" title="Share"><i class="fas fa-share"></i></a>
+                </div>
+            </div>
+            <div class="content">
+                <div class="med-name">Wrist Splint</div>
+                <div class="price">Rs 553 <span>Rs 675</span></div>
+            </div>
+        </div>
+
+        <div class="box" data-id="15" data-name="Period Pain Relief Massager and Heating Pad" data-price="1655" data-image="https://m.media-amazon.com/images/I/61cAV-4Wp9L.UF1000,1000_QL80.jpg">
+            <span class="discount">-8%</span>
+            <div class="image">
+                <img src="https://m.media-amazon.com/images/I/61cAV-4Wp9L.UF1000,1000_QL80.jpg" alt="Period Pain Relief Massager">
+                <div class="icons">
+                    <a href="#" title="Add to Wishlist"><i class="fas fa-heart"></i></a>
+                    <a href="#" class="cart-btn" title="Add to Cart"><i class="fas fa-shopping-cart"></i> Add to cart</a>
+                    <a href="#" title="Share"><i class="fas fa-share"></i></a>
+                </div>
+            </div>
+            <div class="content">
+                <div class="med-name">Period Pain Relief Massager and Heating Pad</div>
+                <div class="price">Rs 1655 <span>Rs 1800</span></div>
+            </div>
+        </div>
+    </div>
+  </section>
+<script src="cart.js"></script>
+<script src="search.js"></script>
+</body>
+</html>
