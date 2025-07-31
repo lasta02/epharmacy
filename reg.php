@@ -25,7 +25,7 @@ if (isset($_POST['Submit'])) {
             $stmt = $conn->prepare("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)");
             $stmt->bind_param("ssss", $Name, $Email, $hashedPassword, $role);
             if ($stmt->execute()) {
-                echo "<script>alert('Registration Successful'); window.location.href='http://127.0.0.1:5500/project.html';</script>";
+                echo "<script>alert('Registration Successful'); window.location.href='http://127.0.0.1:8000/project.php';</script>";
             } else {
                 echo "<script>alert('Registration Failed');</script>";
             }

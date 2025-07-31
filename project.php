@@ -1,5 +1,7 @@
-<?php 
+<?php
+
 session_start();
+// session_destroy(); 
 
 echo '<pre>';
 print_r($_SESSION);
@@ -349,7 +351,7 @@ body .showcart .container{
       <span>Care<span class="highlight">Basket</span></span>
     </div>
     <nav class="heads">
-      <a href="http://localhost/PHP/Project/login.php" target=""><i class="fa-regular fa-circle-user fa-xl"></i></a>
+      <a href="http://localhost:8000/login.php" target=""><i class="fa-regular fa-circle-user fa-xl"></i></a>
       <div class="cart-icon">
         <i class="fa-solid fa-cart-shopping fa-2xl"></i>
         <span class="cart-count">0</span>

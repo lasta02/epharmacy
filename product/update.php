@@ -2,6 +2,8 @@
 
 include(__DIR__ . '/../dbconnect.php');
 
+include(__DIR__ . '/../middleware.php');
+
 if (isset($_GET['id'])) {
     $id = $_GET['id'];
 

@@ -1,3 +1,8 @@
+<?php
+session_start();
+include(__DIR__ . '/middleware.php');
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>

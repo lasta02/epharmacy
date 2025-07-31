@@ -283,7 +283,7 @@ if (isset($_POST['Submit'])) {
       </div>
       
       <p class="signup-text">
-        Don't have an account? <a href="http://localhost/PHP/Project/reg.php">Sign up here</a>
+        Don't have an account? <a href="http://localhost:8000/reg.php">Sign up here</a>
       </p>
       
       <div class="demo-credentials">
