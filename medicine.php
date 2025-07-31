@@ -1,17 +1,23 @@
- <?php
-//  ini_set('display_errors', 1);
-// ini_set('display_startup_errors', 1);
-// error_reporting(E_ALL);
+<?php
+session_start();
+
+if (isset($_SESSION['user_id'])) {
+    // User is logged in
+} else {
+    header("Location: login.php");
+    exit();
+}
 
 include(__DIR__ . '/dbconnect.php');
 
-
-// Fetch all products from the database
 $sql = "SELECT * FROM products";
-$stmt = $pdo->prepare($sql);
+$stmt = $conn->prepare($sql);
 $stmt->execute();
-$products = $stmt->fetchAll();
+
+$result = $stmt->get_result();
+$products = $result->fetch_all(MYSQLI_ASSOC);
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">

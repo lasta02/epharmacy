@@ -15,14 +15,14 @@ if (isset($_POST['Submit'])) {
     if ($result->num_rows === 1) {
         $row = $result->fetch_assoc();
         // Use the correct case for the array key
-        if (password_verify($Password, $row['Password'])) {
+        if (password_verify($Password, $row['password'])) {
             $_SESSION['user_id'] = $row['id'];
-            $_SESSION['email'] = $row['Email'];
+            $_SESSION['email'] = $row['email'];
             $_SESSION['role'] = $row['role'];
             if ($row['role'] === 'admin') {
                 header("Location: admin/1.php");
             } else {
-                header("Location: http://127.0.0.1:5500/project.html");
+                header("Location: http://localhost:8000/project.php");
             }
             exit();
         } else {

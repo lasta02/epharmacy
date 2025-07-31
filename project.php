@@ -1,3 +1,10 @@
+<?php 
+session_start();
+
+echo '<pre>';
+print_r($_SESSION);
+echo '</pre>';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -373,7 +380,7 @@ body .showcart .container{
   </div>
 
   <nav class="btn">
-      <a href="medicine.html">Medicines</a>
+      <a href="medicine.php">Medicines</a>
       <a href="health.html">Healthcare</a>
       <a href="beauty.html">Beauty</a>
       <a href="#about">About</a>
